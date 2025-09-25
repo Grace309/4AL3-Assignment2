@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Data files (不要上传训练集)
+*.csv
+
+# Figures
+*.png
+
+# IDE
+.vscode/
+.idea/
