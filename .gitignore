@@ -8,6 +8,9 @@ __pycache__/
 # Figures
 *.png
 
+# Summary files
+*.txt
+
 # IDE
 .vscode/
 .idea/
