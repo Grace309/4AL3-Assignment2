@@ -9,8 +9,8 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-#BASE = r"C:\Users\grace\OneDrive\桌面\学习资料\SE 4\4AL3\Assignment 2 - Copy\Assignment 2"
 BASE = r"C:\Users\grace\4AL3-Assignment2"
+
 RNG = np.random.default_rng(42)
 
 def load_dataset(base_dir, period="2010"):
@@ -203,21 +203,6 @@ def feature_experiment(period="2010"):
     print(f"\nBest on {period}: {best['combo']} | {best['mean']:.4f} ± {best['std']:.4f}")
     return best
 
-
-# def data_experiment(best_combo):
-#     for period, title in [("2010", "2010-2015"), ("2020", "2020-2024")]:
-#         data = load_dataset(BASE, period)
-#         X = combine_features(data["features"], best_combo)
-#         Xs, ys, _ = preprocess_Xy(X, data["y"])
-#         clf = MySVM()
-#         mean_tss, std_tss, per_fold = clf.kfold_tss(Xs, ys)
-#         cm_dir = os.path.join(BASE, f"reports_{period}", "confusion_matrices")
-#         title = f"Confusion Matrix ({title}) - {'+'.join(best_combo)}"
-#         cm_path = os.path.join(cm_dir, f"cm_{period}_{'_'.join(best_combo)}.png")
-#         tss_holdout, cm_vals = one_holdout_confmat(Xs, ys, title, cm_path)
-#         print(f"Saved confusion matrix: {cm_path} | holdout TSS={tss_holdout:.3f}")
-
-#         print(f"{title} | {best_combo} : TSS={mean_tss:.4f} ± {std_tss:.4f} | folds={np.round(per_fold,3)}")
 
 def data_experiment(best_combo, period="2010"):
     # 1) period → 标题
