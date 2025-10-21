@@ -103,21 +103,47 @@ def one_holdout_confmat(Xs, ys, title, out_path):
     return tss, cm
 
 def feature_experiment(period):
-    out_dir=os.path.join(OUT_BASE,f"reports_{period}"); ensure_dir(out_dir)
-    data=load_dataset(period); feats,y=data["features"],data["y"]
-    rows=[]; best={"combo":None,"mean":-1}
+    out_dir = os.path.join(OUT_BASE, f"reports_{period}")
+    ensure_dir(out_dir)
+    data = load_dataset(period)
+    feats, y = data["features"], data["y"]
+    rows = []
+    best = {"combo": None, "mean": -1}
+
     for combo in all_feature_combos():
-        X=combine_features(feats,combo); Xs,ys,_=preprocess_Xy(X,y)
-        clf=MySVM(); mean,std,scores=clf.kfold_tss(Xs,ys)
-        plot_fold_bars(period,combo,scores,os.path.join(out_dir,"fold_bars"))
-        rows.append({"period":period,"combo":'+'.join(combo),"mean_tss":mean,"std_tss":std})
-        if mean>best["mean"]: best={"combo":combo,"mean":mean,"std":std}
+        X = combine_features(feats, combo)
+        Xs, ys, _ = preprocess_Xy(X, y)
+        clf = MySVM()
+        mean, std, scores = clf.kfold_tss(Xs, ys)
+        plot_fold_bars(period, combo, scores, os.path.join(out_dir, "fold_bars"))
+        rows.append({"period": period, "combo": '+'.join(combo), "mean_tss": mean, "std_tss": std})
+
+        # ✅ 新增：对每个组合都生成 confusion matrix
+        cm_dir = os.path.join(out_dir, "confusion_matrices")
+        ensure_dir(cm_dir)
+        cm_path = os.path.join(cm_dir, f"cm_{period}_{'_'.join(combo)}.png")
+        title = f"Confusion Matrix ({period}) - {'+'.join(combo)}"
+        tss_holdout, cm = one_holdout_confmat(Xs, ys, title, cm_path)
+        print(f"[{period}] Confusion matrix saved for {combo} | holdout TSS={tss_holdout:.3f}")
+
+        # ✅ 写每个组合的 summary
+        with open(os.path.join(out_dir, f"summary_{'_'.join(combo)}.txt"), "w", encoding="utf-8") as f:
+            f.write(f"Dataset: {period}\nFeature combination: {'+'.join(combo)}\n")
+            f.write(f"Mean TSS: {mean:.4f} ± {std:.4f}\nFold scores: {np.round(scores,3)}\n")
+            f.write(f"Holdout TSS: {tss_holdout:.4f}\nConfusion matrix: {cm}\n")
+
+        if mean > best["mean"]:
+            best = {"combo": combo, "mean": mean, "std": std}
+
         print(f"[{period}] {combo}: {mean:.4f} ± {std:.4f}")
-    df=pd.DataFrame(rows).sort_values("mean_tss",ascending=False)
-    csv=os.path.join(out_dir,f"svm_feature_combos_{period}.csv"); df.to_csv(csv,index=False)
-    plot_combo_summary(csv,out_dir)
+
+    df = pd.DataFrame(rows).sort_values("mean_tss", ascending=False)
+    csv = os.path.join(out_dir, f"svm_feature_combos_{period}.csv")
+    df.to_csv(csv, index=False)
+    plot_combo_summary(csv, out_dir)
     print(f"\nBest on {period}: {best['combo']} | {best['mean']:.4f} ± {best['std']:.4f}")
     return best
+
 
 def data_experiment(combo, period):
     title="2010-2015" if period=="2010" else "2020-2024"
